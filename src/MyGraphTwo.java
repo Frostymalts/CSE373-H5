@@ -1,14 +1,16 @@
-import java.util.*;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * A representation of a graph. Assumes that we do not have negative cost edges
  * in the graph.
  */
-public class MyGraph implements Graph {
-	// you will need some private fields to represent the graph
-	// you are also likely to want some private helper methods
-
-	// YOUR CODE HERE
+public class MyGraphTwo implements Graph {
+	private HashMap<Vertex, ArrayList<Edge>> adj;
+	private List<Edge> edges;
 
 	/**
 	 * Creates a MyGraph object with the given collection of vertices and the
@@ -19,10 +21,31 @@ public class MyGraph implements Graph {
 	 * @param e
 	 *            a collection of the edges in this graph
 	 */
-	public MyGraph(Collection<Vertex> v, Collection<Edge> e) {
-
-		// YOUR CODE HERE
-
+	public MyGraphTwo(Collection<Vertex> v, Collection<Edge> e) {
+		if (v == null || e == null || v.size() == 0 || e.size() == 0)
+			throw new IllegalArgumentException();
+		for(Vertex vertex: v) {
+			if (!adj.containsKey(vertex))
+				adj.put(vertex, null);
+		}
+		for (Edge edge: e) {
+			if (!adj.containsKey(edge.getSource()) ||
+					!adj.containsKey(edge.getDestination()))
+				throw new IllegalArgumentException();
+			if (edge.getWeight() < 0)
+				throw new IllegalArgumentException();
+			for (Edge checkEdge: edges) {
+				if (edge.getSource().equals(checkEdge.getSource()) && 
+						edge.getDestination().equals(checkEdge.getDestination()) &&
+						edge.getWeight() != checkEdge.getWeight()) {
+					throw new IllegalArgumentException();
+				}
+			}
+			if (!edges.contains(edge)) {
+				edges.add(edge);
+				adj.get(edge.getSource()).add(edge);
+			}
+		}
 	}
 
 	/**
@@ -32,9 +55,7 @@ public class MyGraph implements Graph {
 	 */
 	@Override
 	public Collection<Vertex> vertices() {
-
-		// YOUR CODE HERE
-
+		return adj.keySet();
 	}
 
 	/**
@@ -44,9 +65,7 @@ public class MyGraph implements Graph {
 	 */
 	@Override
 	public Collection<Edge> edges() {
-
-		// YOUR CODE HERE
-
+		return edges;
 	}
 
 	/**
@@ -62,9 +81,13 @@ public class MyGraph implements Graph {
 	 */
 	@Override
 	public Collection<Vertex> adjacentVertices(Vertex v) {
-
-		// YOUR CODE HERE
-
+		if (!adj.containsKey(v)) 
+			throw new IllegalArgumentException();
+		List<Vertex> destinations = null;
+		for (Edge e : adj.get(v)) {
+			destinations.add(e.getDestination());
+		}
+		return destinations;
 	}
 
 	/**
@@ -82,9 +105,13 @@ public class MyGraph implements Graph {
 	 */
 	@Override
 	public int edgeCost(Vertex a, Vertex b) {
-
-		// YOUR CODE HERE
-
+		if (!adj.containsKey(a))
+			return -1;
+		for (Edge v : adj.get(a)) {
+			if (v.getDestination().equals(b))
+				return v.getWeight();
+		}
+		return -1;
 	}
 
 	/**
@@ -102,11 +129,11 @@ public class MyGraph implements Graph {
 	 * @throws IllegalArgumentException
 	 *             if a or b does not exist.
 	 */
-	public Path shortestPath(Vertex a, Vertex b) {
-
-		// YOUR CODE HERE (you might comment this out this method while doing
-		// Part 1)
-
-	}
+	//	public Path shortestPath(Vertex a, Vertex b) {
+	//
+	//		// YOUR CODE HERE (you might comment this out this method while doing
+	//		// Part 1)
+	//
+	//	}
 
 }
