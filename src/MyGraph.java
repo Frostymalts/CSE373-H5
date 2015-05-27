@@ -169,8 +169,10 @@ public class MyGraph implements Graph {
 			for (Edge e: adj.get(current)) {
 				Vertex next = null;
 				for (Vertex v: keys) {
-					if (v.equals(e.getDestination()))
+					if (v.equals(e.getDestination())) {
 						next = v;
+						break;
+					}
 				}
 				if (!next.known) {
 					int c1 = current.distance + e.getWeight();
