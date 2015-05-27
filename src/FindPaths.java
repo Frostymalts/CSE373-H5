@@ -21,6 +21,11 @@ public class FindPaths {
                 Collection<Edge> e = g.edges();
 		System.out.println("Vertices are "+v);
 		System.out.println("Edges are "+e);
+		//MAKE SURE TO DELETE THIS BEFORE TURNING IN
+		for (Vertex vert: v) {
+			System.out.print(vert + " adj verts: ");
+			System.out.println(g.adjacentVertices(vert));
+		}
 		while(true) {
 			System.out.print("Start vertex? ");
 			Vertex a = new Vertex(console.nextLine());
@@ -38,6 +43,13 @@ public class FindPaths {
 			
 			// YOUR CODE HERE: call shortestPath and print
 			// out the result
+			Path p = g.shortestPath(a, b);
+			if (p == null) {
+				System.out.println("No path exists");
+			} else {
+				System.out.println("Shortest path = " + p.vertices);
+				System.out.println("Cost = " + p.cost);
+			}
 		}
 	}
 

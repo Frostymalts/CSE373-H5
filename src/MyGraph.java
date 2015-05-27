@@ -1,3 +1,9 @@
+/*
+ * Josh Malters, Jessie Peterson
+ * maltersj,
+ * 1336144
+ */
+
 import java.util.*;
 
 /**
@@ -5,7 +11,7 @@ import java.util.*;
  * in the graph.
  */
 public class MyGraph implements Graph {
-	private HashMap<Vertex, ArrayList<Vertex>> adj;
+	private Map<Vertex, ArrayList<Edge>> adj;
 	private List<Edge> edges;
 
 	/**
@@ -20,26 +26,37 @@ public class MyGraph implements Graph {
 	public MyGraph(Collection<Vertex> v, Collection<Edge> e) {
 		if (v == null || e == null || v.size() == 0 || e.size() == 0)
 			throw new IllegalArgumentException();
+		adj = new HashMap<Vertex, ArrayList<Edge>>();
+		edges = new ArrayList<Edge>();
 		for(Vertex vertex: v) {
 			if (!adj.containsKey(vertex))
-				adj.put(vertex, null);
+				adj.put(vertex, new ArrayList<Edge>());
 		}
+		addEdges(e);
+	}
+
+	private void addEdges(Collection<Edge> e) {
 		for (Edge edge: e) {
 			if (!adj.containsKey(edge.getSource()) ||
 					!adj.containsKey(edge.getDestination()))
 				throw new IllegalArgumentException();
 			if (edge.getWeight() < 0)
 				throw new IllegalArgumentException();
-			for (Edge checkEdge: edges) {
-				if (edge.getSource().equals(checkEdge.getSource()) && 
-						edge.getDestination().equals(checkEdge.getDestination()) &&
+
+			boolean notFound = true;
+			for (Edge checkEdge: adj.get(edge.getSource())) {
+				if (edge.getDestination().equals(checkEdge.getDestination()) &&
 						edge.getWeight() != checkEdge.getWeight()) {
 					throw new IllegalArgumentException();
 				}
+				if (edge.getDestination().equals(checkEdge.getDestination()) &&
+						edge.getWeight() == checkEdge.getWeight()) {
+					notFound = !notFound;
+				}
 			}
-			if (!edges.contains(edge)) {
+			if (notFound) {
 				edges.add(edge);
-				adj.get(edge.getSource()).add(edge.getDestination());
+				adj.get(edge.getSource()).add(edge);
 			}
 		}
 	}
@@ -77,7 +94,13 @@ public class MyGraph implements Graph {
 	 */
 	@Override
 	public Collection<Vertex> adjacentVertices(Vertex v) {
-		return adj.get(v);
+		if (!adj.containsKey(v)) 
+			throw new IllegalArgumentException();
+		List<Vertex> destinations = new ArrayList<Vertex>();
+		for (Edge e : adj.get(v)) {
+			destinations.add(e.getDestination());
+		}
+		return destinations;
 	}
 
 	/**
@@ -97,9 +120,11 @@ public class MyGraph implements Graph {
 	public int edgeCost(Vertex a, Vertex b) {
 		if (!adj.containsKey(a))
 			return -1;
-		if (!adj.get(a).contains(b))
-			return -1;
-		return 1;
+		for (Edge v : adj.get(a)) {
+			if (v.getDestination().equals(b))
+				return v.getWeight();
+		}
+		return -1;
 	}
 
 	/**
@@ -117,11 +142,57 @@ public class MyGraph implements Graph {
 	 * @throws IllegalArgumentException
 	 *             if a or b does not exist.
 	 */
-//	public Path shortestPath(Vertex a, Vertex b) {
-//
-//		// YOUR CODE HERE (you might comment this out this method while doing
-//		// Part 1)
-//
-//	}
+	public Path shortestPath(Vertex a, Vertex b) {
+		if (!adj.containsKey(a) || !adj.containsKey(b))
+			return null;
+		List<Vertex> vertices = new ArrayList<Vertex>();
+		if (a.equals(b)) {
+			vertices.add(a);
+			return new Path(vertices, 0);
+		}
+		for (Vertex v: adj.keySet()) {
+			v.distance = Integer.MAX_VALUE;
+			v.known = false;
+		}
+		PriorityQueue<Vertex> q = new PriorityQueue<Vertex>();
+		a.distance = 0;
+		q.add(a);
+		vertices = dijkstra(q, b, adj.keySet());
+		return new Path(vertices, b.distance);
+	}
 
+	private List<Vertex> dijkstra(PriorityQueue<Vertex> q, Vertex b, Set<Vertex> keys) {
+		while (!q.isEmpty()) {
+			Vertex current = q.poll();
+			current.known = true;
+
+			for (Edge e: adj.get(current)) {
+				Vertex next = null;
+				for (Vertex v: keys) {
+					if (v.equals(e.getDestination()))
+						next = v;
+				}
+				if (!next.known) {
+					int c1 = current.distance + e.getWeight();
+					int c2 = next.distance;
+
+					if (c1 < c2) {
+						q.remove(next);
+						next.distance = c1;
+						next.path = current;
+						q.add(next);
+						if (next.equals(b)) {
+							b.distance = next.distance;
+							b.path = next.path;
+						}
+					}
+				}
+			}
+		}
+		List<Vertex> path = new ArrayList<Vertex>();
+		for (Vertex vertex = b; vertex != null; vertex = vertex.path)
+			path.add(vertex);
+		Collections.reverse(path);
+		return path;
+	}
 }

@@ -1,9 +1,14 @@
+import java.util.List;
+
 /**
  * Representation of a graph vertex
  */
-public class Vertex {
+public class Vertex implements Comparable<Vertex> {
 	// label attached to this vertex
 	private String label;
+	public boolean known;
+	public int distance;
+	public Vertex path;
 
 	/**
 	 * Construct a new vertex
@@ -15,6 +20,7 @@ public class Vertex {
 		if (label == null)
 			throw new IllegalArgumentException("null");
 		this.label = label;
+		this.distance = Integer.MAX_VALUE;
 	}
 
 	/**
@@ -59,4 +65,8 @@ public class Vertex {
 		}
 	}
 
+	@Override
+	public int compareTo(Vertex o) {
+		return Integer.compare(this.distance, o.distance);
+	}
 }
